@@ -5,6 +5,7 @@ from typing import Union, List
 from models import NGOPydanticModel
 from database import NGOSQLModel, engine
 from sqlmodel import Session, select
+import sqlite3
 
 
 app = FastAPI()
@@ -37,22 +38,33 @@ def get_item_by_id(item_id: int, respone: Response, session: Session = Depends(g
         Response.status_code = 404
         return "Item not found"
     return item 
-
-@app.get('/NGO/name/{search_text}', response_model=Union[NGOPydanticModel, str])
+#, response_model=Union[NGOPydanticModel, str]
+@app.get('/NGO/search/{search_text}')
 def get_item_by_name(search_text: str, respone: Response, session: Session = Depends(get_session)):
-    stmt = select(NGOSQLModel).where(NGOSQLModel.name.ilike(f'%{search_text}%'))
-    result = session.exec(stmt).all()
-    #results = session.query(NGOSQLModel).filter(NGOSQLModel.name.ilike(f'%{search_text}%')).all()
-    #for item in result:
-        #ngos = session.query(NGOSQLModel).filter(NGOSQLModel.name == search_text).all()
-    '''
-        if item is None:
-            Response.status_code = 404
-            return "Item not found"
-    '''
-    for ngo in result:
-        print(ngo)
-        return ngo
+
+    connection = sqlite3.connect('database\\db.sqlite3')
+    cursor = connection.cursor()
+    
+    cursor.execute(f"""SELECT * FROM ngosqlmodel 
+                   WHERE name LIKE '%{search_text}%'
+                    OR miasto LIKE '%{search_text}%'
+                    OR street LIKE '%{search_text}%'
+                    OR krs LIKE '%{search_text}%'
+                    OR phone LIKE '%{search_text}%'
+                    OR op LIKE '%{search_text}%'
+                    OR status LIKE '%{search_text}%'
+                    OR dzial LIKE '%{search_text}%'
+                    OR numer LIKE '%{search_text}%'
+                """)
+    
+    search = cursor.fetchall()
+    #print(search)
+
+    #lista_tekstowa = [str(tupla) for tupla in search]
+
+    #print(lista_tekstowa)
+    return search
+
 
 #Dodaj nowy zabytek
 @app.post('/NGO/', response_model=NGOPydanticModel, status_code=201)
@@ -96,5 +108,18 @@ def delete_item(item_id: int, respone: Response, session: Session = Depends(get_
     session.commit()
     return Response(status_code=200 )
 
+@app.get('/image')
+def get_image():
+    text = str('C:/Users/marcz/Desktop/Hackaton2023/HackhatonNGO/res/jp.png') 
+    return text 
 
-
+"""
+    OR 'miasto' LIKE "%{search_text}%"
+    OR 'street' LIKE "%{search_text}%"
+    OR 'krs' LIKE "%{search_text}%"
+    OR 'phone' LIKE "%{search_text}%"
+    OR 'op' LIKE "%{search_text}%"
+    OR 'status' LIKE "%{search_text}%"
+    OR 'dzial' LIKE "%{search_text}%"
+    OR 'numer' LIKE "%{search_text}%"
+    """
