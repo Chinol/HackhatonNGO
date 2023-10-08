@@ -1,9 +1,7 @@
 from fastapi import FastAPI, Response, Depends
-import pathlib
-import json
 from typing import Union, List
-from models import NGOPydanticModel
-from database import NGOSQLModel, engine
+from models import NGOPydanticModel, NGOUserPydanticModel
+from database import NGOSQLModel, engine, create_db_and_tables, UserSQLModel
 from sqlmodel import Session, select
 import sqlite3
 
@@ -12,6 +10,7 @@ app = FastAPI()
 
 @app.on_event("startup")
 async def startup_event():
+    create_db_and_tables()
     print("Aplikacja wystartowała")
 
 def get_session():
@@ -38,7 +37,7 @@ def get_item_by_id(item_id: int, respone: Response, session: Session = Depends(g
         Response.status_code = 404
         return "Item not found"
     return item 
-#, response_model=Union[NGOPydanticModel, str]
+
 @app.get('/NGO/search/{search_text}')
 def get_item_by_name(search_text: str, respone: Response, session: Session = Depends(get_session)):
 
@@ -58,12 +57,12 @@ def get_item_by_name(search_text: str, respone: Response, session: Session = Dep
                 """)
     
     search = cursor.fetchall()
-    #print(search)
-
-    #lista_tekstowa = [str(tupla) for tupla in search]
-
-    #print(lista_tekstowa)
-    return search
+    
+    new_dict = {}
+    final_list = [] 
+    for item in search:
+        final_list.append(dict({'name': item[1], 'miasto': item[2], 'street': item[3], 'krs': item[4], 'phone': item[5], 'op': item[6], 'status': item[7], 'dzial': item[8], 'numer': item[9]}))
+    return final_list
 
 
 #Dodaj nowy zabytek
@@ -108,18 +107,25 @@ def delete_item(item_id: int, respone: Response, session: Session = Depends(get_
     session.commit()
     return Response(status_code=200 )
 
+#Create User
+@app.post('/user-create/', response_model=NGOUserPydanticModel, status_code=201)
+def user_create(item: UserSQLModel, session: Session = Depends(get_session)):
+    session.add(item)
+    session.commit()
+    session.refresh(item)
+    return item
+
+#Login User
+@app.get('/user-login/', response_model=str)
+def get_items(login: str, passw: str, session: Session = Depends(get_session)):
+    stmt = select(UserSQLModel).where(UserSQLModel.login == login).where(UserSQLModel.password == str)
+    result = session.exec(stmt)
+    if result is None:
+        return "Uzytkownik nie zostal znaleziony"
+
+    return f"Hej uzyszkodnik {login} zostal zalogowany"
+
 @app.get('/image')
 def get_image():
     text = str('C:/Users/marcz/Desktop/Hackaton2023/HackhatonNGO/res/jp.png') 
     return text 
-
-"""
-    OR 'miasto' LIKE "%{search_text}%"
-    OR 'street' LIKE "%{search_text}%"
-    OR 'krs' LIKE "%{search_text}%"
-    OR 'phone' LIKE "%{search_text}%"
-    OR 'op' LIKE "%{search_text}%"
-    OR 'status' LIKE "%{search_text}%"
-    OR 'dzial' LIKE "%{search_text}%"
-    OR 'numer' LIKE "%{search_text}%"
-    """

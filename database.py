@@ -2,7 +2,7 @@ from typing import Optional, List
 from sqlmodel import Field, SQLModel, create_engine, Session
 import json
 
-json_file_path = 'C:\\Users\\marcz\\Desktop\\Hackaton2023\\HackhatonNGO\\database\\ngo.json'
+json_file_path = 'C:\\Users\\marcz\\Desktop\\Hackaton2023\\HackhatonNGO\\database\\wynik.json'
 
 DATABASE_URL = "C:/Users/marcz/Desktop/Hackaton2023/HackhatonNGO/database/db.sqlite3"
 engine = create_engine(f'sqlite:///{DATABASE_URL}', echo=True)
@@ -19,6 +19,11 @@ class NGOSQLModel(SQLModel, table = True):
     status: Optional[str] = Field(default = None)
     dzial: Optional[str] = Field(default = None)
     numer: Optional[str] = Field(default = None)
+
+class UserSQLModel(SQLModel, table = True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    login: str  
+    password: str
 
 def create_db_and_tables():
     SQLModel.metadata.create_all(engine)
@@ -43,9 +48,9 @@ def import_data():
                         "numer": dict["numer"] 
                     }
 
-            for klucz, wartosc in ngo_dict.items():
-                if "\ufffd" in wartosc:
-                    ngo_dict[klucz] = wartosc.replace("\ufffd", 'l')
+            #for klucz, wartosc in ngo_dict.items():
+                #if "\ufffd" in wartosc:
+                    #ngo_dict[klucz] = wartosc.replace("\ufffd", 'l')
 
             ngo = NGOSQLModel(**ngo_dict)
             with Session(engine) as session:
@@ -53,7 +58,3 @@ def import_data():
                 session.commit()
 
             
-
-
-#create_db_and_tables()
-#import_data()
