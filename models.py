@@ -12,6 +12,8 @@ class NGOPydanticModel(BaseModel):
     status: Optional[str] = Field(default = None)
     dzial: Optional[str] = Field(default = None)
     numer: Optional[str] = Field(default = None)
+    logo: Optional[str] = Field(default = None)
+    kategoria: Optional[str] = Field(default = None)
 
 class NGOUserPydanticModel(BaseModel):
     id: Optional[int] = Field(default=None, primary_key=True)

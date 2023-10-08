@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Response, Depends
 from typing import Union, List
 from models import NGOPydanticModel, NGOUserPydanticModel
-from database import NGOSQLModel, engine, create_db_and_tables, UserSQLModel
+from database import NGOSQLModel, engine, UserSQLModel
 from sqlmodel import Session, select
 import sqlite3
 
@@ -61,7 +61,7 @@ def get_item_by_name(search_text: str, respone: Response, session: Session = Dep
     new_dict = {}
     final_list = [] 
     for item in search:
-        final_list.append(dict({'name': item[1], 'miasto': item[2], 'street': item[3], 'krs': item[4], 'phone': item[5], 'op': item[6], 'status': item[7], 'dzial': item[8], 'numer': item[9]}))
+        final_list.append(dict({'name': item[1], 'miasto': item[2], 'street': item[3], 'krs': item[4], 'phone': item[5], 'op': item[6], 'status': item[7], 'dzial': item[8], 'numer': item[9], 'logo': item[9],'kategoria': item[10]}))
     return final_list
 
 
@@ -126,6 +126,8 @@ def get_items(login: str, passw: str, session: Session = Depends(get_session)):
     return f"Hej uzyszkodnik {login} zostal zalogowany"
 
 @app.get('/image')
-def get_image():
-    text = str('C:/Users/marcz/Desktop/Hackaton2023/HackhatonNGO/res/jp.png') 
-    return text 
+def get_image(session: Session = Depends(get_session)):
+    search = select(NGOSQLModel).where(NGOSQLModel.name == "Akademickie Stowarzyszenie Ambitni w Działaniu")
+    rekord = session.exec(search).one()
+    logo = rekord.logo
+    return logo
