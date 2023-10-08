@@ -2,7 +2,7 @@ from typing import Optional, List
 from sqlmodel import Field, SQLModel, create_engine, Session
 import json
 
-json_file_path = 'C:\\Users\\marcz\\Desktop\\Hackaton2023\\HackhatonNGO\\database\\wynik2.json'
+json_file_path = 'C:\\Users\\marcz\\Desktop\\Hackaton2023\\HackhatonNGO\\database\\wynik3.json'
 
 DATABASE_URL = "C:/Users/marcz/Desktop/Hackaton2023/HackhatonNGO/database/db.sqlite3"
 engine = create_engine(f'sqlite:///{DATABASE_URL}', echo=True)
@@ -51,5 +51,4 @@ def import_data():
             with Session(engine) as session:
                 session.add(ngo)
                 session.commit()
-create_db_and_tables()
-import_data()
+
